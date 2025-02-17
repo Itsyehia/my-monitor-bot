@@ -2,29 +2,12 @@ import asyncio
 import requests
 import atexit
 import time
-import threading
-import logging
-from flask import Flask, render_template, jsonify
 from telegram import Bot as TelegramBot
-from datetime import datetime
+import logging
 
-# === Global log store ===
-logs = []  # List to store log messages
-
-# === Custom logging handler to capture logs in memory ===
-class InMemoryLogHandler(logging.Handler):
-    def emit(self, record):
-        msg = self.format(record)
-        logs.append(msg)
-
-# === Configure logging ===
-log_format = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
-logging.basicConfig(level=logging.INFO, format=log_format)
+# === Enable Logging for Debugging ===
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-# Attach the in-memory handler
-in_memory_handler = InMemoryLogHandler()
-in_memory_handler.setFormatter(logging.Formatter(log_format))
-logger.addHandler(in_memory_handler)
 
 # === Configuration ===
 API_URL = "http://193.227.14.58/api/student-registration-courses?studentId=20215051"
@@ -37,21 +20,19 @@ CHECK_INTERVAL = 60
 # === Initialize Telegram Bot ===
 bot = TelegramBot(token=TELEGRAM_TOKEN)
 
-# === Flask App Initialization ===
-app = Flask(__name__)
-
-# === Async Function to Send Telegram Message ===
+# === Async Function to Send Telegram Message (using asyncio.to_thread) ===
 async def send_telegram_message(message):
     try:
         logger.info("🚀 Sending message to Telegram...")
-        await bot.send_message(chat_id=CHAT_ID, text=message)
+        # Wrap the synchronous call in a thread so we can await it.
+        await asyncio.to_thread(bot.send_message, chat_id=CHAT_ID, text=message)
         logger.info("✅ Message sent to Telegram!")
     except Exception as e:
         logger.error(f"❌ Telegram API Error: {e}")
 
 # === Send Message on Exit ===
 def on_exit():
-    asyncio.run(send_telegram_message("⚠️ Bot has stopped running. Please check your server."))
+    asyncio.run(send_telegram_message("⚠️ Bot has stopped running. Please check your Replit session."))
 
 atexit.register(on_exit)
 
@@ -74,8 +55,8 @@ def check_registration_status():
         logger.error(f"API Request Error: {e}")
         return False
 
-# === Monitoring Function (runs in background) ===
-def monitor_registration():
+# === Main Execution Loop ===
+if __name__ == "__main__":
     logger.info("🚀 Starting Registration Monitor Bot...")
     asyncio.run(send_telegram_message("🚀 Bot Started! Monitoring every 60 seconds."))
     while True:
@@ -83,27 +64,3 @@ def monitor_registration():
             asyncio.run(send_telegram_message("✅ Registration Just Opened!"))
             break
         time.sleep(CHECK_INTERVAL)
-
-# === Flask Routes ===
-
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-@app.route("/start")
-def start_monitoring():
-    # Start the monitoring in a background thread so the server remains responsive.
-    monitor_thread = threading.Thread(target=monitor_registration)
-    monitor_thread.daemon = True
-    monitor_thread.start()
-    return "Monitoring started in the background!"
-
-@app.route("/logs")
-def get_logs():
-    # Return the logs as JSON.
-    # Optionally, you can limit the number of log entries returned.
-    return jsonify(logs)
-
-if __name__ == "__main__":
-    # Listen on all interfaces for OpenShift
-    app.run(host="0.0.0.0", port=8080, debug=True)
