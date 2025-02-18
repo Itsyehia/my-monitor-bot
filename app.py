@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 # === Configuration ===
 API_URL = "http://193.227.14.58/api/student-registration-courses?studentId=20215051"
-BEARER_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyMDIxNTA1MSIsImF1dGgiOiJST0xFX1NUVURFTlQiLCJleHAiOjE3Mzk4MTczNDd9.JdVsCWqbhgUl5VbAxaYuiQUmamIqM-kcsRRtP8-LvVjuSsJBRK42xicDMdZ5DD8GTRRy1OXYNUujxnCSdDF2Gg"
+BEARER_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyMDIxNTA1MSIsImF1dGgiOiJST0xFX1NUVURFTlQiLCJleHAiOjE3Mzk5NjU5Mjl9.u4jDVhkrcxZ_UXVO54PyyIpghO8lbU1Qm0vyxQMgYxBOhRgMCkgpyjR1avu4aylRxusFr4MSpvDxifA5y8EqIA"
 TELEGRAM_TOKEN = "7947829276:AAERvSxeiofBVuIyL_6lzhokxxUEPJo_00Y"
 CHAT_ID = "451246357"
 
